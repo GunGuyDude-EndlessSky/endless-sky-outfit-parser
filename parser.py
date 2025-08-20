@@ -4,13 +4,15 @@ import pandas as pd
 
 ################################################################################
 
+DATADIR = '.'
+
 def main():
     print(f'Starting...')
     paths = []
     raw_df = pd.DataFrame()
 
     # Check all subdirectories for outfits
-    for root, dirs, files in os.walk('.'):
+    for root, dirs, files in os.walk(DATADIR):
         for name in files:
             if (
                 ('outfits.txt' in name and 'deprecated' not in name) or
