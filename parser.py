@@ -47,14 +47,14 @@ def file_parser(path):
         while (line := next(it, None)) is not None:
             if line.startswith('#') or len(line) <= 0:
                 # Exclude comments and empty lines
-                True
+                continue
             else:
                 # Pass this line and iterator to function
                 outfit = outfit_parser(line, it)
                 if outfit is not None:
                     # Skip effects
                     data.append(outfit)
-    df = pd.DataFrame.from_dict(data)
+    df = pd.DataFrame(data)
     df.insert(2, "species", species)
     return df
 
