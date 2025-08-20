@@ -110,7 +110,7 @@ def outfit_parser(line, it):
                 key, value = line[0:index], line[index - len(line):]
             else:
                 # Split string on space
-                key, value = tuple(line.split(' ', 1))
+                key, _, value = tuple(line.partition(' '))
             key, value = key.strip(st), value.strip(st)
             data[key] = value
     return data
