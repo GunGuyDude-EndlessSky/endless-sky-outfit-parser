@@ -1,8 +1,9 @@
-import os
 from pathlib import Path
 import pandas as pd
 
 ################################################################################
+
+DATADIR = '.'
 
 def main():
     print(f'Starting...')
@@ -10,14 +11,14 @@ def main():
     raw_df = pd.DataFrame()
 
     # Check all subdirectories for outfits
-    for root, dirs, files in os.walk('.'):
+    for root, dirs, files in Path(DATADIR).walk():
         for name in files:
             if (
-                ('outfits.txt' in name and 'deprecated' not in name) or
-                'human\engines.txt' in os.path.join(root, name) or
-                'human\power.txt' in os.path.join(root, name) or
-                'human\weapons.txt' in os.path.join(root, name)):
-                paths.append(os.path.join(root, name))
+                (name.endswith('outfits.txt') and 'deprecated' not in name) or
+                (root.name == 'human' and name == 'engines.txt') or
+                (root.name == 'human' and name == 'power.txt') or
+                (root.name == 'human' and name == 'weapons.txt')):
+                paths.append(root / name)
     raw_df = pd.concat([file_parser(path) for path in paths],
                        join='outer', ignore_index=True)
     print(f'Parsing complete.')
@@ -32,10 +33,9 @@ def main():
 
 ################################################################################
 
-def file_parser(path_str):
-    print(f'Current file: {path_str}')
-    species = path_str.split('\\')[-2]
-    path = Path(path_str)
+def file_parser(path):
+    print(f'Current file: {path}')
+    species = path.parent.name
     raw_data = []
     data = []
     
@@ -47,14 +47,14 @@ def file_parser(path_str):
         while (line := next(it, None)) is not None:
             if line.startswith('#') or len(line) <= 0:
                 # Exclude comments and empty lines
-                True
+                continue
             else:
                 # Pass this line and iterator to function
                 outfit = outfit_parser(line, it)
                 if outfit is not None:
                     # Skip effects
                     data.append(outfit)
-    df = pd.DataFrame.from_dict(data)
+    df = pd.DataFrame(data)
     df.insert(2, "species", species)
     return df
 
@@ -110,7 +110,7 @@ def outfit_parser(line, it):
                 key, value = line[0:index], line[index - len(line):]
             else:
                 # Split string on space
-                key, value = tuple(line.split(' ', 1))
+                key, _, value = tuple(line.partition(' '))
             key, value = key.strip(st), value.strip(st)
             data[key] = value
     return data
